@@ -1,14 +1,10 @@
 {
-    "Group": "HytaleModding",
-    "Name": "ExamplePlugin",
+    "Group": "myewphi",
+    "Name": "Myewtilities",
     "Version": "0.0.0",
-    "Description": "Description of your plugin",
+    "Description": "Myewphi's assorted utilities",
     "Authors": [
-        {
-            "Name": "Your_Name",
-            "Email": "your.email@example.com",
-            "Url": "https://your-website.com"
-        }
+        
     ],
     "Website": "https://your-plugin-website.com",
     "DisabledByDefault": false,
@@ -19,8 +15,8 @@
     "OptionalDependencies": {
         
     },
-    "ServerVersion": ">=0.5.3 <0.6.0",
-    "Main": "dev.hytalemodding.ExamplePlugin",
+    "ServerVersion": ">=0.7.0 <0.8.0",
+    "Main": "dev.myewphi.Myewtilities",
     "UpdateChecker": {
         "CurseForge": ""
     }
