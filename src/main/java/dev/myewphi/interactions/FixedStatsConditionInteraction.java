@@ -3,6 +3,7 @@ package dev.myewphi.interactions;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
+import com.hypixel.hytale.codec.validation.Validators;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
@@ -16,6 +17,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.none.StatsConditionBaseInteraction;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.util.AbilityCastUtil;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.util.InteractionTarget;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -28,6 +30,15 @@ public class FixedStatsConditionInteraction extends StatsConditionBaseInteractio
     public static final BuilderCodec<FixedStatsConditionInteraction> CODEC = BuilderCodec.builder(
                     FixedStatsConditionInteraction.class, FixedStatsConditionInteraction::new, StatsConditionBaseInteraction.CODEC
             )
+            .appendInherited(
+                    new KeyedCodec<>("Entity", InteractionTarget.CODEC),
+                    (o, i) -> o.entityTarget = i,
+                    o -> o.entityTarget,
+                    (o, p) -> o.entityTarget = p.entityTarget
+            )
+            .documentation("The entity to target for this interaction.")
+            .addValidator(Validators.nonNull())
+            .add()
             .documentation("Interaction that is successful if the given stat conditions match.")
             .<Boolean>append(new KeyedCodec<>("UseAbilityCost", Codec.BOOLEAN), (o, v) -> o.useAbilityCost = v, o -> o.useAbilityCost)
             .documentation(
@@ -36,6 +47,7 @@ public class FixedStatsConditionInteraction extends StatsConditionBaseInteractio
             .add()
             .build();
     protected boolean useAbilityCost;
+    protected InteractionTarget entityTarget = InteractionTarget.USER;
 
     @Override
     protected void firstRun(@Nonnull InteractionType type, @Nonnull InteractionContext context, @Nonnull CooldownHandler cooldownHandler) {
@@ -50,7 +62,11 @@ public class FixedStatsConditionInteraction extends StatsConditionBaseInteractio
         }
 
         Ref<EntityStore> ref = context.getEntity();
-        if (!this.canAfford(ref, commandBuffer, effectiveCosts)) {
+        final var targetRef = entityTarget.getEntity(context, ref);
+        if (targetRef == null || !targetRef.isValid()) {
+            return;
+        }
+        if (!this.canAfford(targetRef, commandBuffer, effectiveCosts)) {
             context.getState().state = InteractionState.Failed;
         }
     }
